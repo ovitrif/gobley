@@ -48,12 +48,11 @@ expect open class {{ impl_class_name }}: Disposable, {{ interface_name }} {
     {%- call kt::func_decl("override", meth, 4, false) %}
     {% endfor %}
 
-    {%- for tm in obj.uniffi_traits() %}
+    {%- for tm in obj|uniffi_traits %}
     {%-     match tm %}
     {%         when UniffiTrait::Display { fmt } %}
     override fun toString(): String
     {%         when UniffiTrait::Eq { eq, ne } %}
-    {# only equals used #}
     override fun equals(other: Any?): Boolean
     {%         when UniffiTrait::Hash { hash } %}
     override fun hashCode(): Int

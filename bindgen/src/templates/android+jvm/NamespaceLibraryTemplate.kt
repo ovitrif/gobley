@@ -99,7 +99,7 @@ internal interface UniffiLib : Library {
         {%- endif %}
     }
 
-    {% for func in ci.iter_ffi_function_definitions() -%}
+    {% for func in self.dedup_ffi_function_definitions() -%}
     fun {{ func.name() }}(
         {%- call kt::arg_list_ffi_decl(func, 8) %}
     ): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_by_value }}{% when None %}Unit{% endmatch %}
