@@ -128,6 +128,5 @@
 {{ self.add_import("kotlinx.coroutines.Job") }}
 {{ self.add_import("kotlinx.coroutines.GlobalScope") }}
 {{ self.add_import("kotlinx.coroutines.withContext") }}
-{{ self.add_import("kotlinx.coroutines.IO") }}
 {{ self.add_import("kotlinx.coroutines.Dispatchers") }}
 {%- endif %}

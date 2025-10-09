@@ -510,6 +510,22 @@ macro_rules! kotlin_wrapper {
                     Some(Visibility::Internal) => "internal ",
                 }
             }
+
+            fn dedup_ffi_function_definitions(&self) -> Vec<FfiFunction> {
+                let mut seen = HashSet::new();
+                let mut deduped = Vec::new();
+
+                for func in self.ci.iter_ffi_function_definitions_excluding_integrity_checks() {
+                    // Create a unique key based on function name and parameters
+                    let key = (func.name().to_string(), func.arguments().iter().map(|a| format!("{:?}", a.type_())).collect::<Vec<_>>().join(","));
+
+                    if seen.insert(key) {
+                        deduped.push(func.clone());
+                    }
+                }
+
+                deduped
+            }
         }
     };
 }

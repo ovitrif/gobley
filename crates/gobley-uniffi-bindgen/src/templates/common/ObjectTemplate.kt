@@ -53,18 +53,21 @@
     {%- call kt::func_decl("override", meth, 4, false) %}
     {% endfor %}
 
+    {# In KMP mode, obj.methods() may not include trait methods, so we declare them separately #}
+    {# In non-KMP mode, this template is not used #}
+    {%- if config.kotlin_multiplatform %}
     {%- for tm in obj.uniffi_traits() %}
     {%-     match tm %}
     {%         when UniffiTrait::Display { fmt } %}
     override fun toString(): String
     {%         when UniffiTrait::Eq { eq, ne } %}
-    {# only equals used #}
     override fun equals(other: Any?): Boolean
     {%         when UniffiTrait::Hash { hash } %}
     override fun hashCode(): Int
     {%-         else %}
     {%-     endmatch %}
     {%- endfor %}
+    {%- endif %}
 
     {# XXX - "companion object" confusion? How to have alternate constructors *and* be an error? #}
     {%- if !obj.alternate_constructors().is_empty() -%}

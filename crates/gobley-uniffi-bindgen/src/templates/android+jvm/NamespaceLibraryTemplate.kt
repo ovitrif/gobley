@@ -67,16 +67,16 @@ private fun findLibraryName(componentName: String): String {
 }
 
 // For large crates we prevent `MethodTooLargeException` (see #2340)
-// N.B. the name of the extension is very misleading, since it is 
-// rather `InterfaceTooLargeException`, caused by too many methods 
+// N.B. the name of the extension is very misleading, since it is
+// rather `InterfaceTooLargeException`, caused by too many methods
 // in the interface for large crates.
 //
 // By splitting the otherwise huge interface into two parts
-// * UniffiLib 
+// * UniffiLib
 // * IntegrityCheckingUniffiLib (this)
 // we allow for ~2x as many methods in the UniffiLib interface.
-// 
-// The `ffi_uniffi_contract_version` method and all checksum methods are put 
+//
+// The `ffi_uniffi_contract_version` method and all checksum methods are put
 // into `IntegrityCheckingUniffiLib` and these methods are called only once,
 // when the library is loaded.
 internal object IntegrityCheckingUniffiLib : Library {
@@ -248,7 +248,7 @@ internal object UniffiLib : Library {
         {%- endif %}
         IntegrityCheckingUniffiLib
         Native.register(UniffiLib::class.java, findLibraryName("{{ ci.namespace() }}"))
-        // No need to check the contract version and checksums, since 
+        // No need to check the contract version and checksums, since
         // we already did that with `IntegrityCheckingUniffiLib` above.
         {%- for init_fn in self.initialization_fns(ci) %}
         {{ init_fn }}
@@ -262,7 +262,7 @@ internal object UniffiLib : Library {
     }
     {%- endif %}
 
-    {%- for func in ci.iter_ffi_function_definitions_excluding_integrity_checks() %}
+    {%- for func in self.dedup_ffi_function_definitions() %}
     @JvmStatic
     external fun {{ func.name() }}(
         {%- call kt::arg_list_ffi_decl(func, 8) %}

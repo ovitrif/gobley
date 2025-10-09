@@ -136,6 +136,9 @@
     {%- call kt::func_decl_with_body(actual_override, meth, 4) -%}
     {% endfor %}
 
+    {# In KMP mode, obj.methods() may not include trait methods, so we generate them separately #}
+    {# In non-KMP mode, obj.methods() DOES include trait methods, so we skip this to avoid duplicates #}
+    {%- if config.kotlin_multiplatform %}
     {%- for tm in obj.uniffi_traits() %}
     {%-     match tm %}
     {%         when UniffiTrait::Display { fmt } %}
@@ -143,7 +146,6 @@
         return {{ fmt.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(fmt, 8) %})
     }
     {%         when UniffiTrait::Eq { eq, ne } %}
-    {# only equals used #}
     {% call emit_actual %}override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is {{ impl_class_name}}) return false
@@ -156,6 +158,7 @@
     {%-         else %}
     {%-     endmatch %}
     {%- endfor %}
+    {%- endif %}
 
     {# XXX - "companion object" confusion? How to have alternate constructors *and* be an error? #}
     {% if !obj.alternate_constructors().is_empty() -%}
