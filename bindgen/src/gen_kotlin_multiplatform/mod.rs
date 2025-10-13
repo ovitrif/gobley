@@ -433,7 +433,7 @@ macro_rules! kotlin_wrapper {
                 let mut seen = HashSet::new();
                 let mut deduped = Vec::new();
 
-                for func in self.ci.iter_ffi_function_definitions_excluding_integrity_checks() {
+                for func in self.ci.iter_ffi_function_definitions() {
                     // Create a unique key based on function name and parameters
                     let key = (func.name().to_string(), func.arguments().iter().map(|a| format!("{:?}", a.type_())).collect::<Vec<_>>().join(","));
 

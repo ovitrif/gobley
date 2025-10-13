@@ -1,5 +1,5 @@
 
-{{ self.add_import("okio.utf8Size") }}
+fun String.utf8Size(): Int = this.toByteArray(Charsets.UTF_8).size
 
 object FfiConverterString: FfiConverter<String, RustBufferByValue> {
     // Note: we don't inherit from FfiConverterRustBuffer, because we use a
