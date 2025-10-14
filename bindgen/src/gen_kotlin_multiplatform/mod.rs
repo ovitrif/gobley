@@ -1226,4 +1226,25 @@ mod filters {
         let n = usize::try_from(*n).unwrap_or_default();
         Ok(string.repeat(n))
     }
+
+    /// Deduplicate uniffi_traits returned by obj.uniffi_traits()
+    ///
+    /// UniFFI 0.28.3 has a bug where uniffi_traits returns duplicate entries.
+    /// This filter deduplicates them to prevent duplicate method generation.
+    /// Each trait type (Debug, Display, Eq, Hash) should appear only once.
+    pub fn deduplicated_uniffi_traits(obj: &Object) -> Result<Vec<&UniffiTrait>, askama::Error> {
+        let mut seen = std::collections::HashSet::new();
+        let mut deduped = Vec::new();
+
+        for trait_ref in obj.uniffi_traits() {
+            // Create a discriminant key based on trait variant
+            let key = std::mem::discriminant(trait_ref);
+
+            if seen.insert(key) {
+                deduped.push(trait_ref);
+            }
+        }
+
+        Ok(deduped)
+    }
 }

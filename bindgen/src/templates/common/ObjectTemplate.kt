@@ -48,7 +48,8 @@ expect open class {{ impl_class_name }}: Disposable, {{ interface_name }} {
     {%- call kt::func_decl("override", meth, 4, false) %}
     {% endfor %}
 
-    {%- for tm in obj|uniffi_traits %}
+    {# Use deduplicated_uniffi_traits filter to work around UniFFI 0.28.3 duplicate bug #}
+    {%- for tm in obj|deduplicated_uniffi_traits %}
     {%-     match tm %}
     {%         when UniffiTrait::Display { fmt } %}
     override fun toString(): String

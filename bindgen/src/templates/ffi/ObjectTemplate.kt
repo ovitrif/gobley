@@ -134,7 +134,8 @@
     {% endfor %}
 
     {# Always generate trait methods - obj.methods() never includes them #}
-    {%- for tm in obj.uniffi_traits() %}
+    {# Use deduplicated_uniffi_traits filter to work around UniFFI 0.28.3 duplicate bug #}
+    {%- for tm in obj|deduplicated_uniffi_traits %}
     {%-     match tm %}
     {%         when UniffiTrait::Display { fmt } %}
     {% call emit_actual %}override fun toString(): String {
