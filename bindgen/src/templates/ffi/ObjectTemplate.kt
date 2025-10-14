@@ -133,9 +133,7 @@
     {%- call kt::func_decl_with_body(actual_override, meth, 4) -%}
     {% endfor %}
 
-    {# In KMP mode, obj.methods() may not include trait methods, so we generate them separately #}
-    {# In non-KMP mode, obj.methods() DOES include trait methods, so we skip this to avoid duplicates #}
-    {%- if config.kotlin_multiplatform %}
+    {# Always generate trait methods - obj.methods() never includes them #}
     {%- for tm in obj.uniffi_traits() %}
     {%-     match tm %}
     {%         when UniffiTrait::Display { fmt } %}
@@ -155,7 +153,6 @@
     {%-         else %}
     {%-     endmatch %}
     {%- endfor %}
-    {%- endif %}
 
     {# XXX - "companion object" confusion? How to have alternate constructors *and* be an error? #}
     {% if !obj.alternate_constructors().is_empty() -%}
