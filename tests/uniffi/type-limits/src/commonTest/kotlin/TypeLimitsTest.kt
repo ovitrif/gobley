@@ -6,6 +6,7 @@
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.*
+import kotlinx.coroutines.test.runTest
 import type_limits.*
 import kotlin.test.*
 
@@ -14,8 +15,16 @@ class TypeLimitsTest {
     fun testUnsignedDirectReturnLimits() {
         outputU8Max() shouldBe UByte.MAX_VALUE
         outputU16Max() shouldBe UShort.MAX_VALUE
+        outputCustomU8Max() shouldBe UByte.MAX_VALUE
+        outputCustomU16Max() shouldBe UShort.MAX_VALUE
         takeU8(UByte.MAX_VALUE) shouldBe UByte.MAX_VALUE
         takeU16(UShort.MAX_VALUE) shouldBe UShort.MAX_VALUE
+    }
+
+    @Test
+    fun testCustomUnsignedAsyncDirectReturnLimits() = runTest {
+        outputCustomU8MaxAsync() shouldBe UByte.MAX_VALUE
+        outputCustomU16MaxAsync() shouldBe UShort.MAX_VALUE
     }
 
     @Test

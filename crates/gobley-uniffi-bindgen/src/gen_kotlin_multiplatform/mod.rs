@@ -1429,21 +1429,53 @@ mod tests {
     fn unsigned_direct_return_bindings() -> (ComponentInterface, String) {
         let ci = ComponentInterface::from_webidl(
             r#"
+            [Custom]
+            typedef u8 CustomU8;
+            [Custom]
+            typedef u16 CustomU16;
+
             namespace direct_returns {
                 u8 output_u8_max();
                 u16 output_u16_max();
                 u8 roundtrip_u8(u8 value);
                 u16 roundtrip_u16(u16 value);
+                CustomU8 output_custom_u8();
+                CustomU16 output_custom_u16();
+                [Async]
+                CustomU8 output_custom_u8_async();
+                [Async]
+                CustomU16 output_custom_u16_async();
                 void checksum_boundary();
             };
             "#,
             "direct_returns",
         )
         .expect("valid test interface");
+        let custom_types = HashMap::from([
+            (
+                "CustomU8".to_string(),
+                CustomTypeConfig {
+                    type_name: Some("CustomU8Value".to_string()),
+                    lift: "CustomU8Value({})".to_string(),
+                    lower: "{}.value".to_string(),
+                    ..CustomTypeConfig::default()
+                },
+            ),
+            (
+                "CustomU16".to_string(),
+                CustomTypeConfig {
+                    type_name: Some("CustomU16Value".to_string()),
+                    lift: "CustomU16Value({})".to_string(),
+                    lower: "{}.value".to_string(),
+                    ..CustomTypeConfig::default()
+                },
+            ),
+        ]);
         let config = Config {
             package_name: Some("uniffi.direct_returns".to_string()),
             cdylib_name: Some("direct_returns".to_string()),
             kotlin_targets: vec![ConfigKotlinTarget::Android],
+            custom_types,
             ..Config::default()
         };
         let android = generate_bindings(&config, &ci)
@@ -1506,6 +1538,36 @@ mod tests {
         assert!(
             !bindings.contains(&format!("if ({name}() != {checksum}.toShort())")),
             "checksum comparisons should not narrow the expected value"
+        );
+    }
+
+    #[test]
+    fn android_custom_unsigned_returns_lift_from_int_carriers() {
+        let (_, bindings) = unsigned_direct_return_bindings();
+
+        assert!(
+            bindings.contains("public fun lift(value: Int): CustomU8"),
+            "custom u8 returns should lift from Int"
+        );
+        assert!(
+            bindings.contains("public fun lift(value: Int): CustomU16"),
+            "custom u16 returns should lift from Int"
+        );
+        assert!(
+            bindings.contains("external fun uniffi_direct_returns_fn_func_output_custom_u8(\n        uniffiCallStatus: UniffiRustCallStatus,\n    ): Int"),
+            "custom u8 direct returns should use Int as the JNA carrier"
+        );
+        assert!(
+            bindings.contains("external fun uniffi_direct_returns_fn_func_output_custom_u16(\n        uniffiCallStatus: UniffiRustCallStatus,\n    ): Int"),
+            "custom u16 direct returns should use Int as the JNA carrier"
+        );
+        assert!(
+            bindings.contains("{ FfiConverterTypeCustomU8.lift(it) }"),
+            "async custom u8 returns should lift from the widened carrier"
+        );
+        assert!(
+            bindings.contains("{ FfiConverterTypeCustomU16.lift(it) }"),
+            "async custom u16 returns should lift from the widened carrier"
         );
     }
 }

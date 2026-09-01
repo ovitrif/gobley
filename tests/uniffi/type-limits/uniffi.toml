@@ -1,1 +1,11 @@
 package_name = "type_limits"
+
+[custom_types.CustomU8]
+type_name = "kotlin.UByte"
+lift = "{}"
+lower = "{}"
+
+[custom_types.CustomU16]
+type_name = "kotlin.UShort"
+lift = "{}"
+lower = "{}"
