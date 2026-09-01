@@ -1,3 +1,9 @@
+[Custom]
+typedef u8 CustomU8;
+
+[Custom]
+typedef u16 CustomU16;
+
 namespace type_limits {
   i8 take_i8(i8 v);
   i16 take_i16(i16 v);
@@ -6,6 +12,14 @@ namespace type_limits {
 
   u8 take_u8(u8 v);
   u16 take_u16(u16 v);
+  u8 output_u8_max();
+  u16 output_u16_max();
+  CustomU8 output_custom_u8_max();
+  CustomU16 output_custom_u16_max();
+  [Async]
+  CustomU8 output_custom_u8_max_async();
+  [Async]
+  CustomU16 output_custom_u16_max_async();
   u32 take_u32(u32 v);
   u64 take_u64(u64 v);
 

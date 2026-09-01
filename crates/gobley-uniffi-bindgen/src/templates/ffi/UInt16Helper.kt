@@ -4,6 +4,10 @@
         return value.toUShort()
     }
 
+    public fun lift(value: Int): UShort {
+        return value.toUShort()
+    }
+
     override fun read(buf: ByteBuffer): UShort {
         return lift(buf.getShort())
     }

@@ -4,6 +4,12 @@
 
 use std::str;
 
+pub struct CustomU8(pub u8);
+uniffi::custom_newtype!(CustomU8, u8);
+
+pub struct CustomU16(pub u16);
+uniffi::custom_newtype!(CustomU16, u16);
+
 fn take_i8(v: i8) -> i8 {
     v
 }
@@ -22,6 +28,24 @@ fn take_u8(v: u8) -> u8 {
 }
 fn take_u16(v: u16) -> u16 {
     v
+}
+fn output_u8_max() -> u8 {
+    u8::MAX
+}
+fn output_u16_max() -> u16 {
+    u16::MAX
+}
+fn output_custom_u8_max() -> CustomU8 {
+    CustomU8(u8::MAX)
+}
+fn output_custom_u16_max() -> CustomU16 {
+    CustomU16(u16::MAX)
+}
+async fn output_custom_u8_max_async() -> CustomU8 {
+    CustomU8(u8::MAX)
+}
+async fn output_custom_u16_max_async() -> CustomU16 {
+    CustomU16(u16::MAX)
 }
 fn take_u32(v: u32) -> u32 {
     v

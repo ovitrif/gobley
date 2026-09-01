@@ -104,7 +104,7 @@ internal object IntegrityCheckingUniffiLib : Library {
     {%- endif %}
     private fun uniffiCheckApiChecksums() {
         {%- for (name, expected_checksum) in ci.iter_checksums() %}
-        if ({{ name }}() != {{ expected_checksum }}.toShort()) {
+        if ({{ name }}() != {{ expected_checksum }}) {
             throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
         }
         {%- endfor %}
@@ -116,7 +116,7 @@ internal object IntegrityCheckingUniffiLib : Library {
     @JvmStatic
     external fun {{ func.name() }}(
         {%- call kt::arg_list_ffi_decl(func, 8) %}
-    ): {% match func.return_type() %}{% when Some(return_type) %}{{ return_type.borrow()|ffi_type_name_by_value(ci) }}{% when None %}Unit{% endmatch %}
+    ): {% match func.return_type() %}{% when Some(return_type) %}{{ return_type.borrow()|ffi_type_name_for_direct_return(ci) }}{% when None %}Unit{% endmatch %}
     {%- endfor %}
 }
 
@@ -266,7 +266,7 @@ internal object UniffiLib : Library {
     @JvmStatic
     external fun {{ func.name() }}(
         {%- call kt::arg_list_ffi_decl(func, 8) %}
-    ): {% match func.return_type() %}{% when Some(return_type) %}{{ return_type.borrow()|ffi_type_name_by_value(ci) }}{% when None %}Unit{% endmatch %}
+    ): {% match func.return_type() %}{% when Some(return_type) %}{{ return_type.borrow()|ffi_type_name_for_direct_return(ci) }}{% when None %}Unit{% endmatch %}
     {%- endfor %}
 }
 
