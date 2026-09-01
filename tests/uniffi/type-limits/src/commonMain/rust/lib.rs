@@ -23,6 +23,12 @@ fn take_u8(v: u8) -> u8 {
 fn take_u16(v: u16) -> u16 {
     v
 }
+fn output_u8_max() -> u8 {
+    u8::MAX
+}
+fn output_u16_max() -> u16 {
+    u16::MAX
+}
 fn take_u32(v: u32) -> u32 {
     v
 }

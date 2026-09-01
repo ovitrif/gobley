@@ -6,6 +6,8 @@ namespace type_limits {
 
   u8 take_u8(u8 v);
   u16 take_u16(u16 v);
+  u8 output_u8_max();
+  u16 output_u16_max();
   u32 take_u32(u32 v);
   u64 take_u64(u64 v);
 

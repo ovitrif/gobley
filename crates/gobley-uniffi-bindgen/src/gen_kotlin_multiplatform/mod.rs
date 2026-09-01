@@ -677,6 +677,19 @@ impl KotlinCodeOracle {
         }
     }
 
+    /// Kotlin/JNA direct mapping requires unsigned sub-word return values to use an `Int`
+    /// carrier so its declaration matches the native ABI on Android ARM32.
+    fn ffi_type_label_for_direct_return(
+        &self,
+        ffi_type: &FfiType,
+        ci: &ComponentInterface,
+    ) -> String {
+        match ffi_type {
+            FfiType::UInt8 | FfiType::UInt16 => "Int".to_string(),
+            _ => self.ffi_type_label_by_value(ffi_type, ci),
+        }
+    }
+
     /// FFI type name to use inside structs
     ///
     /// The main requirement here is that all types must have default values or else the struct
@@ -1179,6 +1192,13 @@ mod filters {
         Ok(KotlinCodeOracle.ffi_type_label_by_value(type_, ci))
     }
 
+    pub fn ffi_type_name_for_direct_return(
+        type_: &FfiType,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.ffi_type_label_for_direct_return(type_, ci))
+    }
+
     pub fn ffi_type_name(
         type_: &FfiType,
         ci: &ComponentInterface,
@@ -1399,5 +1419,93 @@ mod filters {
     pub fn repeat(string: &str, n: &i32) -> Result<String, askama::Error> {
         let n = usize::try_from(*n).unwrap_or_default();
         Ok(string.repeat(n))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn unsigned_direct_return_bindings() -> (ComponentInterface, String) {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace direct_returns {
+                u8 output_u8_max();
+                u16 output_u16_max();
+                u8 roundtrip_u8(u8 value);
+                u16 roundtrip_u16(u16 value);
+                void checksum_boundary();
+            };
+            "#,
+            "direct_returns",
+        )
+        .expect("valid test interface");
+        let config = Config {
+            package_name: Some("uniffi.direct_returns".to_string()),
+            cdylib_name: Some("direct_returns".to_string()),
+            kotlin_targets: vec![ConfigKotlinTarget::Android],
+            ..Config::default()
+        };
+        let android = generate_bindings(&config, &ci)
+            .expect("generated bindings")
+            .android
+            .expect("Android bindings");
+        (ci, android)
+    }
+
+    #[test]
+    fn android_unsigned_direct_returns_use_int_carriers() {
+        let (_, bindings) = unsigned_direct_return_bindings();
+
+        assert!(
+            bindings.contains("external fun uniffi_direct_returns_fn_func_output_u8_max(\n        uniffiCallStatus: UniffiRustCallStatus,\n    ): Int"),
+            "u8 direct returns should use Int as the JNA carrier"
+        );
+        assert!(
+            bindings.contains("external fun uniffi_direct_returns_fn_func_output_u16_max(\n        uniffiCallStatus: UniffiRustCallStatus,\n    ): Int"),
+            "u16 direct returns should use Int as the JNA carrier"
+        );
+        assert!(
+            bindings.contains("external fun uniffi_direct_returns_fn_func_roundtrip_u8(\n        `value`: Byte,\n        uniffiCallStatus: UniffiRustCallStatus,\n    ): Int"),
+            "u8 arguments should remain Byte while direct returns use Int"
+        );
+        assert!(
+            bindings.contains("external fun uniffi_direct_returns_fn_func_roundtrip_u16(\n        `value`: Short,\n        uniffiCallStatus: UniffiRustCallStatus,\n    ): Int"),
+            "u16 arguments should remain Short while direct returns use Int"
+        );
+        assert!(
+            bindings.contains("fun lift(value: Int): UByte"),
+            "widened u8 returns should lift to UByte"
+        );
+        assert!(
+            bindings.contains("fun lift(value: Int): UShort"),
+            "widened u16 returns should lift to UShort"
+        );
+    }
+
+    #[test]
+    fn android_checksums_use_positive_int_values() {
+        let (ci, bindings) = unsigned_direct_return_bindings();
+        let (name, checksum) = ci
+            .iter_checksums()
+            .find(|(name, _)| name.ends_with("checksum_func_checksum_boundary"))
+            .expect("checksum boundary function");
+
+        assert!(
+            checksum > i16::MAX as u16,
+            "test checksum should exceed Short.MAX_VALUE"
+        );
+        assert!(
+            bindings.contains(&format!("external fun {name}(\n    ): Int")),
+            "checksum functions should use Int as the JNA carrier"
+        );
+        assert!(
+            bindings.contains(&format!("if ({name}() != {checksum})")),
+            "checksum comparisons should use the positive Int value"
+        );
+        assert!(
+            !bindings.contains(&format!("if ({name}() != {checksum}.toShort())")),
+            "checksum comparisons should not narrow the expected value"
+        );
     }
 }

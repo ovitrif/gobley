@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/gobley/gobley/compare/v0.3.7...HEAD)
 
+### Fixes
+
+- Fixed unsigned 8-bit and 16-bit direct returns in Kotlin/JNA bindings on Android ARM32.
+
 ## [0.3.7](https://github.com/gobley/gobley/releases/tag/v0.3.7) - 2025-10-08
 
 ### Fixes

@@ -11,6 +11,14 @@ import kotlin.test.*
 
 class TypeLimitsTest {
     @Test
+    fun testUnsignedDirectReturnLimits() {
+        outputU8Max() shouldBe UByte.MAX_VALUE
+        outputU16Max() shouldBe UShort.MAX_VALUE
+        takeU8(UByte.MAX_VALUE) shouldBe UByte.MAX_VALUE
+        takeU16(UShort.MAX_VALUE) shouldBe UShort.MAX_VALUE
+    }
+
+    @Test
     fun testStringLimits() {
         shouldThrow<CharacterCodingException> {
             takeString("\ud800")
